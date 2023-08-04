@@ -1,3 +1,5 @@
+import axios from "axios"
+
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
@@ -13,12 +15,70 @@ const getState = ({ getStore, getActions, setStore }) => {
 					background: "white",
 					initial: "white"
 				}
-			]
+			],
+			userLogged:""
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
+			},
+
+			goProfile: async () => {
+				try {
+					const config = {
+						headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
+					}
+					let data = await axios.get("https://symmetrical-parakeet-gjrq5x949jv3r4x-3001.preview.app.github.dev/api/profile",config)
+					console.log(data);
+					return true
+				} catch (error) {
+					console.log(error);
+					return false
+				}
+				
+			},
+			signUp: async (email,password) =>{
+				try {
+					let data = await axios.post("https://symmetrical-parakeet-gjrq5x949jv3r4x-3001.preview.app.github.dev/api/signup",{
+						email:email,
+						password:password
+					})
+					console.log(data);
+					if (data.data.staus === 200){
+						actions.logIn(email,password)
+					}
+					return true
+				} catch (error) {
+					console.log(error);
+					return false
+				}
+			},
+
+			logIn: async (email,password) => {
+				localStorage.removeItem("token")
+				try {
+					let data = await axios.post("https://symmetrical-parakeet-gjrq5x949jv3r4x-3001.preview.app.github.dev/api/login",{
+					email:email,
+					password:password
+				})
+					console.log(data);
+					localStorage.setItem("token",data.data.access_token)
+					setStore({userLogged:email})
+					return true
+				} catch (error) {
+					console.log(error);	
+					return false
+				}
+				
+			},
+
+			logOut: () => {
+				if (localStorage.getItem("token") != null){
+					localStorage.removeItem("token")
+				}else{
+					alert("No hay token")
+				}
 			},
 
 			getMessage: async () => {
