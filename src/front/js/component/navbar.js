@@ -6,13 +6,15 @@ export const Navbar = () => {
 	const {store,actions} = useContext(Context)
 	const navigate = useNavigate()
 
-	function openProfile(){
-		if (actions.goProfile()){
-			navigate("/profile")
-		}else{
-			alert("No se ha iniciado sesión aun")
-		}
-	}
+	// async function openProfile(){
+	// 	let validate = await actions.validateToken()
+	// 	console.log(validate);
+	// 	if (validate){
+	// 		navigate("/profile")
+	// 	}else{
+	// 		alert("No se ha iniciado sesión aun")
+	// 	}
+	// }
 
 	function cerrarSesion(){
 		actions.logOut()
@@ -25,17 +27,14 @@ export const Navbar = () => {
 					<span className="navbar-brand mb-0 h1">React Boilerplate</span>
 				</Link>
 				<div className="ml-auto">
-					<Link to="/login">
-						<button className="btn btn-primary mx-1">Log In</button>
-					</Link>
+					{store.logged ? <button className="btn btn-primary mx-1" onClick={()=>{
+						cerrarSesion()
+						navigate("/")
+						}}>Cerrar sesión</button>:<Link to="/login"><button className="btn btn-primary mx-1">Log In</button></Link>}
 					<Link to="/signup">
 						<button className="btn btn-primary mx-1">Sign Up</button>
 					</Link>
-					<button className="btn btn-primary mx-1" onClick={cerrarSesion}>Cerrar sesión</button>
-					<button className="btn btn-primary mx-1" onClick={openProfile}>Profile</button>
-					<Link to="/demo">
-						<button className="btn btn-primary mx-1">Check the Context in action</button>
-					</Link>
+					<button className="btn btn-primary mx-1" onClick={()=>navigate("/profile")}>Profile</button>
 				</div>
 			</div>
 		</nav>

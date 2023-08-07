@@ -3,7 +3,11 @@ import axios from "axios"
 const getState = ({ getStore, getActions, setStore }) => {
 	return {
 		store: {
-			message: null,
+			message: {
+				type:"info",
+				display:"none",
+				msg:""
+			},
 			demo: [
 				{
 					title: "FIRST",
@@ -16,7 +20,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 					initial: "white"
 				}
 			],
-			userLogged:""
+			user:null,
+			logged:false
 		},
 		actions: {
 			// Use getActions to call a function within a fuction
@@ -24,33 +29,45 @@ const getState = ({ getStore, getActions, setStore }) => {
 				getActions().changeColor(0, "green");
 			},
 
-			goProfile: async () => {
+			validateToken: async () => {
 				try {
 					const config = {
 						headers:{Authorization: `Bearer ${localStorage.getItem("token")}`}
 					}
 					let data = await axios.get("https://symmetrical-parakeet-gjrq5x949jv3r4x-3001.preview.app.github.dev/api/profile",config)
-					console.log(data);
-					return true
+					if (data.status === 200 ){
+						return true
+					}
 				} catch (error) {
 					console.log(error);
+					if (error.response.status === 401){
+						setStore({message:{type:"danger",display:"block",msg:"La sesión ha expirado"}})
+						localStorage.removeItem("token")
+						return false
+					}else if(error.response.status === 422){
+						setStore({message:{type:"danger",display:"block",msg:"No se ha iniciado sesión aun"}})
+						return false
+					}
 					return false
 				}
 				
 			},
 			signUp: async (email,password) =>{
+				const actions=getActions()
 				try {
 					let data = await axios.post("https://symmetrical-parakeet-gjrq5x949jv3r4x-3001.preview.app.github.dev/api/signup",{
 						email:email,
 						password:password
 					})
 					console.log(data);
-					if (data.data.staus === 200){
+					if (data.status === 201){
 						actions.logIn(email,password)
 					}
+					setStore({message:{type:"info",display:"block",msg:"Usuario creado con exito"}})
 					return true
 				} catch (error) {
 					console.log(error);
+					setStore({message:{type:"danger",display:"block",msg:"Error. Usuario no creado"}})
 					return false
 				}
 			},
@@ -64,7 +81,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 				})
 					console.log(data);
 					localStorage.setItem("token",data.data.access_token)
-					setStore({userLogged:email})
+					setStore({user:email,logged:true})
+					setStore({message:{type:"info",display:"block",msg:`Sesion iniciada, usuario: ${email}`}})
 					return true
 				} catch (error) {
 					console.log(error);	
@@ -76,6 +94,8 @@ const getState = ({ getStore, getActions, setStore }) => {
 			logOut: () => {
 				if (localStorage.getItem("token") != null){
 					localStorage.removeItem("token")
+					setStore({user:null,logged:false})
+					setStore({message:{type:"info",display:"block",msg:"Sesión cerrada"}})
 				}else{
 					alert("No hay token")
 				}

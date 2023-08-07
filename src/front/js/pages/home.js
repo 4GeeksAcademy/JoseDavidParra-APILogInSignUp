@@ -12,8 +12,8 @@ export const Home = () => {
 			<p>
 				<img src={rigoImageUrl} />
 			</p>
-			<div className="alert alert-info">
-				{store.message || "Loading message from the backend (make sure your python backend is running)..."}
+			<div className={`alert alert-${store.message.type} d-${store.message.display}`}>
+				{store.message.msg}
 			</div>
 			<p>
 				This boilerplate comes with lots of documentation:{" "}
